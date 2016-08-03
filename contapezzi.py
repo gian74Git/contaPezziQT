@@ -21,7 +21,8 @@ class PieceCounterGui(QMainWindow):
 
         self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
         self.ui.leNumPezzi.setText(str(self.logic.get_daily_qty()))
-        self.draw_hours()
+        self.logic.set_daily_qty()
+        self.draw_hours_and_qty()
 
         self.ui.btnChiudi.clicked.connect(self.btnEsciClick)
         self.ui.actionEsci.triggered.connect(self.btnEsciClick)
@@ -31,8 +32,9 @@ class PieceCounterGui(QMainWindow):
         self.ui.btnTest.clicked.connect(self.btn_test_click)
 
         self.ui.btnImposta.clicked.connect(self.btn_sethours_click)
+        self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
 
-    def draw_hours(self):
+    def draw_hours_and_qty(self):
         lista_orari = self.logic.get_hours()
         font = QtGui.QFont()
         font.setPointSize(24)
@@ -40,7 +42,15 @@ class PieceCounterGui(QMainWindow):
             self.ui.lbTitoloOra = QtWidgets.QLabel(self.ui.qfOre)
             self.ui.lbTitoloOra.setText(dict_orario["ORARIO"])
             self.ui.lbTitoloOra.setFont(font)
+
+            #N.B.: vl_ore è il nome del layout dell'oggetto qfOre in QT Designer
             self.ui.vlOre.addWidget(self.ui.lbTitoloOra)
+            self.ui.lbQtyPerOra = QtWidgets.QLabel(self.ui.qfOre)
+            self.ui.lbQtyPerOra.setText(str(int(dict_orario["qty"])))
+            self.ui.lbQtyPerOra.setFont(font)
+            self.ui.vlPrev.addWidget(self.ui.lbQtyPerOra)
+
+
 
     def btn_sethours_click(self):
         self.logic.set_daily_qty(int(self.ui.leNumPezzi.text()))

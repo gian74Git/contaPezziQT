@@ -70,8 +70,20 @@ class logicCounter():
             self.num_pieces_until_now = 0
         return self.num_pieces_until_now
 
+    def get_pieces_this_hour(self):
+        cursor = self.db_conn.cursor()
+        s_qry = "select iLetNumProg from TLet_Letture where dLetDataLettura = '%s' and tLetOraIni <= '%s' and tLetOraFine >= '%s' "\
+                % (datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"),
+                   datetime.datetime.now().strftime("%H:%M:%S"))
+        cursor.execute(s_qry)
+        row = cursor.fetchone()
+        if row[0] is not None:
+            return row[0]
+        else:
+            return 0
+
     def get_hours(self):
-        s_qry = "SELECT tOraIni, tOraFine FROM TOra_Orari ORDER BY tOraIni"
+        s_qry = "SELECT iOraId, tOraIni, tOraFine, fOraTotPezzi FROM TOra_Orari ORDER BY tOraIni"
         cursor = self.db_conn.cursor()
         cursor.execute(s_qry)
         row = cursor.fetchone()
@@ -80,10 +92,15 @@ class logicCounter():
         hour_list = []
         while row is not None:
             dict_orari = dict()
-            dict_orari["ID"] = i_count
-            tm_from= datetime.datetime.strptime(row[0].__str__(), "%H:%M:%S").strftime("%H:%M")
-            tm_to = datetime.datetime.strptime(row[1].__str__(), "%H:%M:%S").strftime("%H:%M")
+            dict_orari["ID"] = row[0]
+            tm_from= datetime.datetime.strptime(row[1].__str__(), "%H:%M:%S").strftime("%H:%M")
+            tm_to = datetime.datetime.strptime(row[2].__str__(), "%H:%M:%S").strftime("%H:%M")
             dict_orari["ORARIO"] = "%s - %s" %(tm_from, tm_to)
+            if row[3] is not None:
+                dict_orari["qty"] = row[3]
+            else:
+                dict_orari["qty"] = 0
+
             hour_list.append(dict_orari)
             i_count += 1
             row = cursor.fetchone()

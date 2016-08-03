@@ -25,7 +25,7 @@ class logicCounter():
         if self.db_conn is not None:
             self.db_conn.close()
 
-    def count_piece_today(self):
+    def add_piece_in_hour(self):
         curr_date = datetime.datetime.now().strftime('%Y-%m-%d')
         curr_time = datetime.datetime.now().strftime('%H:%M:%S')
 
@@ -37,18 +37,22 @@ class logicCounter():
         if row_orari is not None:
             hour_found = True
             # Hour record exists. Searching for TLet_Letture record. If not found inserting...
-            s_qry = "SELECT * FROM TLet_Letture WHERE dLetDataLettura = '%s' AND tLetOraIni <= '%s' AND tLetOraFine >= '%s" \
+            s_qry = "SELECT * FROM TLet_Letture WHERE dLetDataLettura = '%s' AND tLetOraIni <= '%s' AND tLetOraFine >= '%s'" \
                 %(datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"),
                   datetime.datetime.now().strftime("%H:%M:%S"))
             cursor.execute(s_qry)
             row = cursor.fetchone()
             id_let = 0
+
             if row is not None:
                 id_let = int(row[0])
                 s_qry = "UPDATE TLet_Letture SET iLetNumProg = %d WHERE iLetId = %d" %(self.get_pieces_until_now() + 1, id_let)
             else:
                 s_qry = "INSERT INTO TLet_Letture set dLetDataLettura = '%s', sLetNote = '', tLetOraini = '%s', tLetOraFine = '%s', iLetNumProg = %d" \
-                        %(curr_date, row_orari[1], row_orari[2], self.get_pieces_until_now() + 1)
+                        % (curr_date, (datetime.datetime.min + row_orari[1]).time().strftime("%H:%M:%S"),
+                           (datetime.datetime.min + row_orari[2]).time().strftime("%H:%M:%S"),
+                           self.get_pieces_until_now() + 1)
+
             cursor.execute(s_qry)
             self.db_conn.commit()
         else:
@@ -60,7 +64,7 @@ class logicCounter():
         s_qry = "select SUM(iLetNumProg) from TLet_Letture where dLetDataLettura = '%s'" %datetime.datetime.now().strftime("%Y-%m-%d")
         cursor.execute(s_qry)
         row = cursor.fetchone()
-        if row is not None:
+        if row[0] is not None:
             self.num_pieces_until_now = int(row[0])
         else:
             self.num_pieces_until_now = 0

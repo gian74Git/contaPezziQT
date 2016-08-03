@@ -47,7 +47,7 @@ class PieceCounterGui(QMainWindow):
         self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
 
     def btn_test_click(self):
-        if not self.logic.count_piece_today():
+        if not self.logic.add_piece_in_hour():
             self.ui.lbError.setText("ATTENZIONE: Orari non trovati. Controllare la tabella")
         else:
             self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))

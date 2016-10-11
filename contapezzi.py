@@ -13,7 +13,8 @@ if not Debug:
 
 class PieceCounterGui(QMainWindow):
     def __init__(self):
-        self.logic = logicCounter()
+        self.lista_orari = []
+        self.logic = logicCounter(self)
         QMainWindow.__init__(self, parent=None)
         super(PieceCounterGui, self).__init__()
         self.ui = Ui_contaPezzi()
@@ -22,7 +23,7 @@ class PieceCounterGui(QMainWindow):
         self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
         self.ui.leNumPezzi.setText(str(self.logic.get_daily_qty()))
         self.logic.set_daily_qty()
-        self.draw_hours_and_qty()
+        #self.draw_hours_and_qty()
 
         self.ui.btnChiudi.clicked.connect(self.btnEsciClick)
         self.ui.actionEsci.triggered.connect(self.btnEsciClick)
@@ -33,23 +34,31 @@ class PieceCounterGui(QMainWindow):
 
         self.ui.btnImposta.clicked.connect(self.btn_sethours_click)
         self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
+        self.draw_hours_and_qty()
+
 
     def draw_hours_and_qty(self):
-        lista_orari = self.logic.get_hours()
+        self.lista_orari = self.logic.get_hours()
         font = QtGui.QFont()
         font.setPointSize(24)
-        for dict_orario in lista_orari:
+        for dict_orario in self.lista_orari:
             self.ui.lbTitoloOra = QtWidgets.QLabel(self.ui.qfOre)
             self.ui.lbTitoloOra.setText(dict_orario["ORARIO"])
             self.ui.lbTitoloOra.setFont(font)
-
-            #N.B.: vl_ore è il nome del layout dell'oggetto qfOre in QT Designer
             self.ui.vlOre.addWidget(self.ui.lbTitoloOra)
+
+            #Generazione label per i pezzi previsti
+            #N.B.: vl_ore è il nome del layout dell'oggetto qfOre in QT Designer
             self.ui.lbQtyPerOra = QtWidgets.QLabel(self.ui.qfOre)
-            self.ui.lbQtyPerOra.setText(str(int(dict_orario["qty"])))
+            self.ui.lbQtyPerOra.setText(str(int(dict_orario["qty_expected"])))
             self.ui.lbQtyPerOra.setFont(font)
+            #self.ui.lbQtyPerOra.upda
             self.ui.vlPrev.addWidget(self.ui.lbQtyPerOra)
 
+            #Generazione label per i pezzi fatti.
+            self.ui.vlFatti.addWidget(dict_orario["label_pcs_done"])
+            dict_orario["label_pcs_done"].setFont(font)
+            dict_orario["label_pcs_done"].setText(str(int(dict_orario["qty_hour"])))
 
 
     def btn_sethours_click(self):
@@ -61,6 +70,12 @@ class PieceCounterGui(QMainWindow):
             self.ui.lbError.setText("ATTENZIONE: Orari non trovati. Controllare la tabella")
         else:
             self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
+            pcs_ts_hour = self.logic.get_pieces_this_hour()
+            for dict_orario in self.lista_orari:
+                if dict_orario["ID"] == pcs_ts_hour[1]:
+                    dict_orario["label_pcs_done"].setText(str(int(pcs_ts_hour[0])))
+
+
             self.ui.lbError.setText("")
 
     def btnEsciClick(self):

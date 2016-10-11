@@ -5,15 +5,17 @@ from time import sleep
 import pymysql
 import datetime
 from datetime import timedelta
+from PyQt5 import QtWidgets
 
 CONST_DB = "letturePezziDB"
 CONST_NUM_PC_TOT_DAY = 403
 
 class logicCounter():
 
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         self.db_conn = None
-        self.num_pieces_until_now = 0
+        #self.num_pieces_until_now = 0
         self.daily_qty = 0
         self.pieces_x_hour = 0
         self.db_conn = pymysql.connect("localhost", "root", "sardegna", CONST_DB)
@@ -46,12 +48,11 @@ class logicCounter():
 
             if row is not None:
                 id_let = int(row[0])
-                s_qry = "UPDATE TLet_Letture SET iLetNumProg = %d WHERE iLetId = %d" %(self.get_pieces_until_now() + 1, id_let)
+                s_qry = "UPDATE TLet_Letture SET iLetNumProg = %d WHERE iLetId = %d" %(self.get_pieces_this_hour()[0] + 1, id_let)
             else:
                 s_qry = "INSERT INTO TLet_Letture set dLetDataLettura = '%s', sLetNote = '', tLetOraini = '%s', tLetOraFine = '%s', iLetNumProg = %d" \
                         % (curr_date, (datetime.datetime.min + row_orari[1]).time().strftime("%H:%M:%S"),
-                           (datetime.datetime.min + row_orari[2]).time().strftime("%H:%M:%S"),
-                           self.get_pieces_until_now() + 1)
+                           (datetime.datetime.min + row_orari[2]).time().strftime("%H:%M:%S"), 1)
 
             cursor.execute(s_qry)
             self.db_conn.commit()
@@ -61,16 +62,18 @@ class logicCounter():
 
     def get_pieces_until_now(self):
         cursor = self.db_conn.cursor()
-        s_qry = "select SUM(iLetNumProg) from TLet_Letture where dLetDataLettura = '%s'" %datetime.datetime.now().strftime("%Y-%m-%d")
+        s_qry = "select SUM(iLetNumProg), iLetId from TLet_Letture where dLetDataLettura = '%s'" %datetime.datetime.now().strftime("%Y-%m-%d")
         cursor.execute(s_qry)
         row = cursor.fetchone()
-        if row[0] is not None:
-            self.num_pieces_until_now = int(row[0])
+        if row is not None:
+            num_pieces_until_now = int(row[0])
         else:
-            self.num_pieces_until_now = 0
-        return self.num_pieces_until_now
+            num_pieces_until_now = 0
+
+        return num_pieces_until_now
 
     def get_pieces_this_hour(self):
+        result = []
         cursor = self.db_conn.cursor()
         s_qry = "select iLetNumProg from TLet_Letture where dLetDataLettura = '%s' and tLetOraIni <= '%s' and tLetOraFine >= '%s' "\
                 % (datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"),
@@ -78,9 +81,19 @@ class logicCounter():
         cursor.execute(s_qry)
         row = cursor.fetchone()
         if row[0] is not None:
-            return row[0]
+            result.append(row[0])
         else:
-            return 0
+            result.append(0)
+        s_qry = "select iOraId from TOra_Orari where tOraIni <= '%s' AND tOraFine >= '%s'" \
+                %(datetime.datetime.now().strftime("%H:%M:%S"), datetime.datetime.now().strftime("%H:%M:%S"))
+        cursor.execute(s_qry)
+        row = cursor.fetchone()
+        if row[0] is not None:
+            result.append(row[0])
+        else:
+            result.append(0)
+
+        return result
 
     def get_hours(self):
         s_qry = "SELECT iOraId, tOraIni, tOraFine, fOraTotPezzi FROM TOra_Orari ORDER BY tOraIni"
@@ -97,9 +110,22 @@ class logicCounter():
             tm_to = datetime.datetime.strptime(row[2].__str__(), "%H:%M:%S").strftime("%H:%M")
             dict_orari["ORARIO"] = "%s - %s" %(tm_from, tm_to)
             if row[3] is not None:
-                dict_orari["qty"] = row[3]
+                dict_orari["qty_expected"] = row[3]
             else:
-                dict_orari["qty"] = 0
+                dict_orari["qty_expected"] = 0
+
+            s_qry_pcs_in_hour = "SELECT iLetNumProg FROM TLet_Letture WHERE dLetDataLettura = '%s' AND " \
+                                " tLetOraIni <= '%s' AND tLetOraFine >= '%s'" %(datetime.datetime.now().strftime("%Y-%m-%d"), row[1], row[2])
+
+            cur_pcs_in_hour = self.db_conn.cursor()
+            cur_pcs_in_hour.execute(s_qry_pcs_in_hour)
+            row_pcs = cur_pcs_in_hour.fetchone()
+            if row_pcs is not None:
+                dict_orari["qty_hour"] = row_pcs[0]
+            else:
+                dict_orari["qty_hour"] = 0
+
+            dict_orari["label_pcs_done"] = QtWidgets.QLabel(self.parent.ui.qfFatti)
 
             hour_list.append(dict_orari)
             i_count += 1

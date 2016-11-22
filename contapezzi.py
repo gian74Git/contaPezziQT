@@ -6,6 +6,7 @@ from contapezzi_ui import Ui_contaPezzi
 import time
 from PyQt5 import QtGui, QtCore
 
+
 Debug = True
 if not Debug:
     import RPi.GPIO as GPIO
@@ -35,6 +36,12 @@ class PieceCounterGui(QMainWindow):
         self.ui.btnImposta.clicked.connect(self.btn_sethours_click)
         self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
         self.draw_hours_and_qty()
+        #Timer declaration to control changing day.
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.update_for_day_change)
+        self.timer.start(1000)
+        #self.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.update_for_day_change)
+        #self.timer.start(1000)
 
     def control_color_pcs_done(self, dict_passed):
         preview_pcs_hour = self.logic.get_preview_pieces_this_hour()
@@ -100,6 +107,9 @@ class PieceCounterGui(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def update_for_day_change(self):
+        print("Timer!")
 
 app = QApplication(sys.argv)
 ui = PieceCounterGui()

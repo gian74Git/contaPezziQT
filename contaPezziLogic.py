@@ -29,7 +29,7 @@ class logicCounter():
 
     def add_piece_in_hour(self):
         curr_date = datetime.datetime.now().strftime('%Y-%m-%d')
-        curr_time = datetime.datetime.now().strftime('%H:%M:%S')
+        # curr_time = datetime.datetime.now().strftime('%H:%M:%S')
 
         cursor = self.db_conn.cursor()
         s_qry = "SELECT iOraId, tOraIni, tOraFine FROM TOra_Orari WHERE tOraIni <= '%s' AND tOraFine >= '%s'" \
@@ -65,7 +65,7 @@ class logicCounter():
         s_qry = "select SUM(iLetNumProg), iLetId from TLet_Letture where dLetDataLettura = '%s'" %datetime.datetime.now().strftime("%Y-%m-%d")
         cursor.execute(s_qry)
         row = cursor.fetchone()
-        if row is not None:
+        if (row is not None) and (row[0] is not None):
             num_pieces_until_now = int(row[0])
         else:
             num_pieces_until_now = 0
@@ -94,6 +94,17 @@ class logicCounter():
             result.append(0)
 
         return result
+
+    def get_preview_pieces_this_hour(self):
+        s_qry = "SELECT fOraTotPezzi FROM TOra_Orari WHERE tOraIni <= '%s' AND tOraFine >= '%s'" \
+                % (datetime.datetime.now().strftime("%H:%M:%S"), datetime.datetime.now().strftime("%H:%M:%S"))
+        cursor = self.db_conn.cursor()
+        cursor.execute(s_qry)
+        row = cursor.fetchone()
+        if (row is not None) and (row[0] is not None):
+            return int(row[0])
+        else:
+            return 0
 
     def get_hours(self):
         s_qry = "SELECT iOraId, tOraIni, tOraFine, fOraTotPezzi FROM TOra_Orari ORDER BY tOraIni"

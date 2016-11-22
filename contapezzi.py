@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox, QMainWindow
 from PyQt5 import QtWidgets
 from contapezzi_ui import Ui_contaPezzi
 import time
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 
 Debug = True
 if not Debug:
@@ -36,6 +36,13 @@ class PieceCounterGui(QMainWindow):
         self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
         self.draw_hours_and_qty()
 
+    def control_color_pcs_done(self, dict_passed):
+        preview_pcs_hour = self.logic.get_preview_pieces_this_hour()
+        done_pcs_hour = int(dict_passed["qty_hour"]);
+        if (done_pcs_hour < preview_pcs_hour):
+            dict_passed["label_pcs_done"].setStyleSheet("background-color: rgb(247, 17, 17);")
+        else:
+            dict_passed["label_pcs_done"].setStyleSheet("background-color: rgb(7, 249, 0);")
 
     def draw_hours_and_qty(self):
         self.lista_orari = self.logic.get_hours()
@@ -47,18 +54,21 @@ class PieceCounterGui(QMainWindow):
             self.ui.lbTitoloOra.setFont(font)
             self.ui.vlOre.addWidget(self.ui.lbTitoloOra)
 
-            #Generazione label per i pezzi previsti
-            #N.B.: vl_ore è il nome del layout dell'oggetto qfOre in QT Designer
+            #Label generation for preview pieces
+            #N.B.: vl_ore it's the name of the layout of the object qfOre in QT Designer
             self.ui.lbQtyPerOra = QtWidgets.QLabel(self.ui.qfOre)
             self.ui.lbQtyPerOra.setText(str(int(dict_orario["qty_expected"])))
             self.ui.lbQtyPerOra.setFont(font)
             #self.ui.lbQtyPerOra.upda
             self.ui.vlPrev.addWidget(self.ui.lbQtyPerOra)
+            self.ui.lbQtyPerOra.setAlignment(QtCore.Qt.AlignCenter)
 
-            #Generazione label per i pezzi fatti.
+            #Label generation for done pieces.
             self.ui.vlFatti.addWidget(dict_orario["label_pcs_done"])
             dict_orario["label_pcs_done"].setFont(font)
             dict_orario["label_pcs_done"].setText(str(int(dict_orario["qty_hour"])))
+            dict_orario["label_pcs_done"].setAlignment(QtCore.Qt.AlignCenter)
+            self.control_color_pcs_done(dict_orario)
 
 
     def btn_sethours_click(self):
@@ -74,7 +84,9 @@ class PieceCounterGui(QMainWindow):
             for dict_orario in self.lista_orari:
                 if dict_orario["ID"] == pcs_ts_hour[1]:
                     dict_orario["label_pcs_done"].setText(str(int(pcs_ts_hour[0])))
+                    dict_orario["qty_hour"] = int(dict_orario["qty_hour"]) + 1
 
+            self.control_color_pcs_done(dict_orario)
 
             self.ui.lbError.setText("")
 

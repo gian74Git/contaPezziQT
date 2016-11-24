@@ -127,7 +127,9 @@ class PieceCounterGui(QMainWindow):
             event.ignore()
 
     def update_for_day_change(self):
-        print("Timer!")
+        #Vedi def update_clock(self, firstLaunch=False): di contaPezzi. Svuotare anche le liste e ricrearle...
+        if (self.dateNow != self.datePassed):
+            self.ui.lbPzFatti.setText("0")
 
 app = QApplication(sys.argv)
 ui = PieceCounterGui()

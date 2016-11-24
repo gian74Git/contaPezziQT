@@ -81,18 +81,18 @@
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>85</height>
+                <height>95</height>
                </size>
               </property>
               <property name="font">
                <font>
-                <pointsize>72</pointsize>
+                <pointsize>62</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
               <property name="text">
-               <string>Previsto</string>
+               <string>Prev. oggi</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -110,6 +110,9 @@
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 rgba(174, 0, 5, 255), stop:1 rgba(255, 2, 0, 255));</string>
               </property>
               <property name="text">
                <string>0</string>
@@ -130,18 +133,18 @@
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>85</height>
+                <height>95</height>
                </size>
               </property>
               <property name="font">
                <font>
-                <pointsize>72</pointsize>
+                <pointsize>62</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
               <property name="text">
-               <string>Fatto</string>
+               <string>Fatto oggi</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -193,13 +196,13 @@
               </property>
               <property name="font">
                <font>
-                <pointsize>72</pointsize>
+                <pointsize>60</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
               <property name="text">
-               <string>Giorn</string>
+               <string>Prev.Giorn</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -240,6 +243,12 @@
                </property>
                <item>
                 <widget class="QLabel" name="lbOra">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="font">
                   <font>
                    <pointsize>48</pointsize>
@@ -249,6 +258,9 @@
                  </property>
                  <property name="text">
                   <string>Ora</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
                  </property>
                 </widget>
                </item>

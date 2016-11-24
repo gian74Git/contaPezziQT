@@ -20,6 +20,8 @@ class logicCounter():
         self.pieces_x_hour = 0
         self.db_conn = pymysql.connect("localhost", "root", "sardegna", CONST_DB)
         self.set_daily_qty()
+        self.minutePassed = datetime.datetime.now().strftime("%M")
+        self.prev_preview_pcs = 0
         if self.db_conn is None:
             raise
 
@@ -95,9 +97,10 @@ class logicCounter():
 
         return result
 
-    def get_preview_pieces_this_hour(self):
+    def get_preview_pieces_this_hour(self, tm_start, tm_end):
         s_qry = "SELECT fOraTotPezzi FROM TOra_Orari WHERE tOraIni <= '%s' AND tOraFine >= '%s'" \
-                % (datetime.datetime.now().strftime("%H:%M:%S"), datetime.datetime.now().strftime("%H:%M:%S"))
+            %(tm_start, tm_end)
+        #% (datetime.datetime.now().strftime("%H:%M:%S"), datetime.datetime.now().strftime("%H:%M:%S"))
         cursor = self.db_conn.cursor()
         cursor.execute(s_qry)
         row = cursor.fetchone()
@@ -120,6 +123,8 @@ class logicCounter():
             tm_from= datetime.datetime.strptime(row[1].__str__(), "%H:%M:%S").strftime("%H:%M")
             tm_to = datetime.datetime.strptime(row[2].__str__(), "%H:%M:%S").strftime("%H:%M")
             dict_orari["ORARIO"] = "%s - %s" %(tm_from, tm_to)
+            dict_orari["HOUR_START"] = "%s" %tm_from
+            dict_orari["HOUR_END"] = "%s" %tm_to
             if row[3] is not None:
                 dict_orari["qty_expected"] = row[3]
             else:
@@ -173,5 +178,40 @@ class logicCounter():
 
     def get_daily_qty(self):
         return self.daily_qty
+
+    def get_preview_pcs_till_now(self, do_anyway=False):
+        minute_now = datetime.datetime.now().strftime("%M")
+        if (minute_now != self.minutePassed) | do_anyway:
+            self.minutePassed = datetime.datetime.now().strftime("%M")
+            cursor = self.db_conn.cursor()
+            now = datetime.datetime.now() - timedelta(hours=1)
+            old_time = now.strftime('%H:%M:%S')
+            curr_time = datetime.datetime.now().strftime('%H:%M:%S')
+
+            sQry = "SELECT sum(fOraTotPezzi) FROM TOra_Orari WHERE tOraIni < '%s'" % old_time
+            cursor.execute(sQry)
+            tot_prec = cursor.fetchone()
+
+            sQry = "SELECT fOraTotPezzi FROM TOra_Orari WHERE (tOraIni <= '%s') and (tOraFine > '%s') " \
+                   %(curr_time, curr_time)
+            cursor.execute(sQry)
+            prev_now = cursor.fetchone()
+            if prev_now != None:
+                tot_actual = (prev_now[0] * float(self.minutePassed)) // 60.0
+
+                if tot_prec != None:
+                    if tot_prec[0] != None:
+                        self.prev_preview_pcs = tot_prec[0] + tot_actual
+                        return int(self.prev_preview_pcs)
+                    else:
+                        self.prev_preview_pcs = tot_actual
+                        return int(self.prev_preview_pcs)
+            else:
+                return int(self.prev_preview_pcs)
+
+            cursor.close()
+        else:
+            return int(self.prev_preview_pcs)
+
 
 

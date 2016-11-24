@@ -14,6 +14,11 @@ if not Debug:
 
 class PieceCounterGui(QMainWindow):
     def __init__(self):
+
+        self.red_gradient = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 " \
+                            "rgba(174, 0, 5, 255), stop:1 rgba(255, 2, 0, 255));"
+        self.green_gradient = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 " \
+                              "rgba(0, 174, 68, 255), stop:1 rgba(0, 255, 67, 255));"
         self.lista_orari = []
         self.logic = logicCounter(self)
         QMainWindow.__init__(self, parent=None)
@@ -21,8 +26,9 @@ class PieceCounterGui(QMainWindow):
         self.ui = Ui_contaPezzi()
         self.ui.setupUi(self)
 
-        self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
-        self.ui.leNumPezzi.setText(str(self.logic.get_daily_qty()))
+        self.daily_qty = self.logic.get_daily_qty()
+        self.ui.lbPzGiorn.setText(str(self.daily_qty))
+        self.ui.leNumPezzi.setText(str(self.daily_qty))
         self.logic.set_daily_qty()
         #self.draw_hours_and_qty()
 
@@ -36,20 +42,32 @@ class PieceCounterGui(QMainWindow):
         self.ui.btnImposta.clicked.connect(self.btn_sethours_click)
         self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
         self.draw_hours_and_qty()
-        #Timer declaration to control changing day.
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update_for_day_change)
-        self.timer.start(1000)
-        #self.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.update_for_day_change)
-        #self.timer.start(1000)
+        #Timer declaration to control changing day. Fired every minute
+        self.timer_day_change = QtCore.QTimer(self)
+        self.timer_day_change.timeout.connect(self.update_for_day_change)
+        self.timer_day_change.start(60000)
+
+        #This timer provide update of preview pieces till now.
+        self.update_preview_tot = QtCore.QTimer(self)
+        self.update_preview_tot.timeout.connect(self.update_preview_now)
+        self.update_preview_tot.start(1000)
+        self.update_preview_now(True)
+
+    def update_preview_now(self, do_anyway = False):
+        tot_pcs_till_now = self.logic.get_preview_pcs_till_now(do_anyway)
+        self.ui.lbPzPrevisti.setText(str(tot_pcs_till_now))
+        if tot_pcs_till_now < self.daily_qty:
+            self.ui.lbPzPrevisti.setStyleSheet(self.red_gradient)
+        else:
+            self.ui.lbPzPrevisti.setStyleSheet(self.green_gradient)
 
     def control_color_pcs_done(self, dict_passed):
-        preview_pcs_hour = self.logic.get_preview_pieces_this_hour()
+        preview_pcs_hour = self.logic.get_preview_pieces_this_hour(dict_passed["HOUR_START"], dict_passed["HOUR_END"])
         done_pcs_hour = int(dict_passed["qty_hour"]);
         if (done_pcs_hour < preview_pcs_hour):
-            dict_passed["label_pcs_done"].setStyleSheet("background-color: rgb(247, 17, 17);")
+            dict_passed["label_pcs_done"].setStyleSheet(self.red_gradient)
         else:
-            dict_passed["label_pcs_done"].setStyleSheet("background-color: rgb(7, 249, 0);")
+            dict_passed["label_pcs_done"].setStyleSheet(self.green_gradient)
 
     def draw_hours_and_qty(self):
         self.lista_orari = self.logic.get_hours()
@@ -66,7 +84,6 @@ class PieceCounterGui(QMainWindow):
             self.ui.lbQtyPerOra = QtWidgets.QLabel(self.ui.qfOre)
             self.ui.lbQtyPerOra.setText(str(int(dict_orario["qty_expected"])))
             self.ui.lbQtyPerOra.setFont(font)
-            #self.ui.lbQtyPerOra.upda
             self.ui.vlPrev.addWidget(self.ui.lbQtyPerOra)
             self.ui.lbQtyPerOra.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -81,6 +98,7 @@ class PieceCounterGui(QMainWindow):
     def btn_sethours_click(self):
         self.logic.set_daily_qty(int(self.ui.leNumPezzi.text()))
         self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
+
 
     def btn_test_click(self):
         if not self.logic.add_piece_in_hour():

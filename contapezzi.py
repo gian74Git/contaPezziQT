@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets
 from contapezzi_ui import Ui_contaPezzi
 import time
 from PyQt5 import QtGui, QtCore
-from const import CUSTOMER_NAME
+from const import CUSTOMER_NAME, RED_GRADIENT, GREEN_GRADIENT
 from datetime import datetime
 
 
@@ -18,10 +18,8 @@ class PieceCounterGui(QMainWindow):
     def __init__(self):
         self.dateNow = datetime.now().strftime("%Y-%m-%d")
         self.datePassed = datetime.now().strftime("%Y-%m-%d")
-        self.red_gradient = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 " \
-                            "rgba(174, 0, 5, 255), stop:1 rgba(255, 2, 0, 255));"
-        self.green_gradient = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 " \
-                              "rgba(0, 174, 68, 255), stop:1 rgba(0, 255, 67, 255));"
+        self.red_gradient = RED_GRADIENT
+        self.green_gradient = GREEN_GRADIENT
         self.lista_orari = []
         self.logic = logicCounter(self)
         QMainWindow.__init__(self, parent=None)
@@ -126,8 +124,9 @@ class PieceCounterGui(QMainWindow):
                 if dict_orario["ID"] == pcs_ts_hour[1]:
                     dict_orario["label_pcs_done"].setText(str(int(pcs_ts_hour[0])))
                     dict_orario["qty_hour"] = int(dict_orario["qty_hour"]) + 1
+                    dict_to_pass = dict_orario
 
-            self.control_color_pcs_done(dict_orario)
+            self.control_color_pcs_done(dict_to_pass)
 
             self.ui.lbError.setText("")
 

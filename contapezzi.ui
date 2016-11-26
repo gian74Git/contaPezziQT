@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1534</width>
+    <width>1752</width>
     <height>885</height>
    </rect>
   </property>
@@ -90,6 +90,9 @@
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Prev. oggi</string>
@@ -528,7 +531,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1534</width>
+     <width>1752</width>
      <height>25</height>
     </rect>
    </property>

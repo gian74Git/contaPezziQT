@@ -56,10 +56,10 @@ class PieceCounterGui(QMainWindow):
         self.draw_hours_and_qty()
         self.update_preview_now(True)
 
-    def update_preview_now(self, do_anyway = False):
+    def update_preview_now(self, do_anyway=False):
         tot_pcs_till_now = self.logic.get_preview_pcs_till_now(do_anyway)
         self.ui.lbPzPrevisti.setText(str(tot_pcs_till_now))
-        if tot_pcs_till_now < self.daily_qty:
+        if self.logic.get_pieces_until_now() < tot_pcs_till_now:
             self.ui.lbPzPrevisti.setStyleSheet(self.red_gradient)
         else:
             self.ui.lbPzPrevisti.setStyleSheet(self.green_gradient)

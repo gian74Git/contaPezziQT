@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'contapezzi.ui'
 #
-# Created: Sun Nov 27 16:20:39 2016
+# Created: Sun Nov 27 16:31:36 2016
 #      by: PyQt5 UI code generator 5.2.1
 #
 # WARNING! All changes made in this file will be lost!

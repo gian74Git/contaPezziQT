@@ -8,12 +8,6 @@ from PyQt5 import QtGui, QtCore
 from const import CUSTOMER_NAME, RED_GRADIENT, GREEN_GRADIENT
 from datetime import datetime
 
-
-Debug = True
-if not Debug:
-    import RPi.GPIO as GPIO
-
-
 class PieceCounterGui(QMainWindow):
     def __init__(self):
         self.dateNow = datetime.now().strftime("%Y-%m-%d")

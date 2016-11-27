@@ -1,14 +1,11 @@
-import time
-import os
-import time
-from time import sleep
 import pymysql
 import datetime
 from datetime import timedelta
 from PyQt5 import QtWidgets
+from const import DEBUG, CONST_DB, CONST_NUM_PC_TOT_DAY
 
-CONST_DB = "letturePezziDB"
-CONST_NUM_PC_TOT_DAY = 403
+if not DEBUG:
+    import RPi.GPIO as GPIO
 
 class logicCounter():
 
@@ -23,13 +20,13 @@ class logicCounter():
         self.set_daily_qty()
         self.minutePassed = datetime.datetime.now().strftime("%M")
         self.prev_preview_pcs = 0
-        '''
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        button = 4
-        GPIO.setup(button, GPIO.IN, GPIO.PUD_UP)
-        GPIO.add_event_detect(4, GPIO.RISING, callback=metodo_di_call_back, bouncetime=10)
-        '''
+        if not DEBUG:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setwarnings(False)
+            button = 4
+            GPIO.setup(button, GPIO.IN, GPIO.PUD_UP)
+            GPIO.add_event_detect(4, GPIO.RISING, callback=metodo_di_call_back, bouncetime=10)
+
         if self.db_conn is None:
             raise
 

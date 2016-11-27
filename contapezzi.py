@@ -7,6 +7,10 @@ import time
 from PyQt5 import QtGui, QtCore
 from const import CUSTOMER_NAME, RED_GRADIENT, GREEN_GRADIENT
 from datetime import datetime
+from const import DEBUG, IN_PIN
+
+if not DEBUG:
+    import RPi.GPIO as GPIO
 
 class PieceCounterGui(QMainWindow):
     def __init__(self):
@@ -25,7 +29,7 @@ class PieceCounterGui(QMainWindow):
         self.ui.actionEsci.triggered.connect(self.btnEsciClick)
         self.ui.lbCliente.setText(CUSTOMER_NAME)
 
-        self.ui.btnTest.clicked.connect(self.btn_test_click)
+        self.ui.btnTest.clicked.connect(self.count_piece)
 
         self.ui.btnImposta.clicked.connect(self.btn_sethours_click)
 
@@ -34,11 +38,17 @@ class PieceCounterGui(QMainWindow):
         self.timer_day_change.timeout.connect(self.update_for_day_change)
         self.timer_day_change.start(10000)
 
-        # This timer provide update of preview pieces till now. Fired every secon but we can slow it.
+        # This timer provide update of preview pieces till now. Fired every second but we can slow it.
         self.update_preview_tot = QtCore.QTimer(self)
         self.update_preview_tot.timeout.connect(self.update_preview_now)
         self.update_preview_tot.start(1000)
         self.internal_init()
+
+        if not DEBUG:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setwarnings(False)
+            GPIO.setup(IN_PIN, GPIO.IN, GPIO.PUD_UP)
+            GPIO.add_event_detect(IN_PIN, GPIO.RISING, callback=self.count_piece, bouncetime=10)
 
     def internal_init(self):
         self.logic.prev_preview_pcs = 0
@@ -108,22 +118,23 @@ class PieceCounterGui(QMainWindow):
         self.logic.set_daily_qty(int(self.ui.leNumPezzi.text()))
         self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
 
+    def count_piece(self, channel):
+        if DEBUG or (GPIO.input(IN_PIN)):
+            if not self.logic.add_piece_in_hour():
+                self.ui.lbError.setText("ATTENZIONE: Orari non trovati. Controllare la tabella")
+            else:
+                self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
+                pcs_ts_hour = self.logic.get_pieces_this_hour()
+                for dict_orario in self.lista_orari:
+                    if dict_orario["ID"] == pcs_ts_hour[1]:
+                        dict_orario["label_pcs_done"].setText(str(int(pcs_ts_hour[0])))
+                        dict_orario["qty_hour"] = int(dict_orario["qty_hour"]) + 1
+                        dict_to_pass = dict_orario
 
-    def btn_test_click(self):
-        if not self.logic.add_piece_in_hour():
-            self.ui.lbError.setText("ATTENZIONE: Orari non trovati. Controllare la tabella")
-        else:
-            self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
-            pcs_ts_hour = self.logic.get_pieces_this_hour()
-            for dict_orario in self.lista_orari:
-                if dict_orario["ID"] == pcs_ts_hour[1]:
-                    dict_orario["label_pcs_done"].setText(str(int(pcs_ts_hour[0])))
-                    dict_orario["qty_hour"] = int(dict_orario["qty_hour"]) + 1
-                    dict_to_pass = dict_orario
+                # Gian: Questa riga provoca crash ogni tanto. Verificare se posso metterla da qualche altra parte.
+                self.control_color_pcs_done(dict_to_pass)
 
-            self.control_color_pcs_done(dict_to_pass)
-
-            self.ui.lbError.setText("")
+                self.ui.lbError.setText("")
 
     def btnEsciClick(self):
         self.close()

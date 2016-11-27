@@ -1,5 +1,6 @@
 # if true no GPIO and trigger
 DEBUG = True
+IN_PIN = 4
 CONST_DB = "letturePezziDB"
 CONST_NUM_PC_TOT_DAY = 403
 CUSTOMER_NAME = "VIST TECH"

@@ -18,10 +18,18 @@ class logicCounter():
         #self.num_pieces_until_now = 0
         self.daily_qty = 0
         self.pieces_x_hour = 0
-        self.db_conn = pymysql.connect("localhost", "root", "sardegna", CONST_DB)
+        # self.db_conn = pymysql.connect("localhost", "root", "sardegna", CONST_DB)
+        self.db_conn = pymysql.connect("192.168.1.10", "root", "sardegna", CONST_DB)
         self.set_daily_qty()
         self.minutePassed = datetime.datetime.now().strftime("%M")
         self.prev_preview_pcs = 0
+        '''
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+        button = 4
+        GPIO.setup(button, GPIO.IN, GPIO.PUD_UP)
+        GPIO.add_event_detect(4, GPIO.RISING, callback=metodo_di_call_back, bouncetime=10)
+        '''
         if self.db_conn is None:
             raise
 

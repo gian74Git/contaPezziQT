@@ -35,10 +35,10 @@ class PieceCounterGui(QMainWindow):
 
         self.ui.btnImposta.clicked.connect(self.btn_sethours_click)
 
-        # Timer declaration to control changing day. Fired every minute
+        # Timer declaration to control changing day. Fired every ten seconds
         self.timer_day_change = QtCore.QTimer(self)
         self.timer_day_change.timeout.connect(self.update_for_day_change)
-        self.timer_day_change.start(1000)
+        self.timer_day_change.start(10000)
 
         # This timer provide update of preview pieces till now. Fired every secon but we can slow it.
         self.update_preview_tot = QtCore.QTimer(self)
@@ -47,6 +47,7 @@ class PieceCounterGui(QMainWindow):
         self.internal_init()
 
     def internal_init(self):
+        self.logic.prev_preview_pcs = 0
         self.daily_qty = self.logic.get_daily_qty()
         self.ui.lbPzGiorn.setText(str(self.daily_qty))
         self.ui.leNumPezzi.setText(str(self.daily_qty))

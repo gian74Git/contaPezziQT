@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'contapezzi.ui'
 #
-# Created: Thu Nov 24 21:55:27 2016
+# Created: Sun Nov 27 16:20:39 2016
 #      by: PyQt5 UI code generator 5.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_contaPezzi(object):
     def setupUi(self, contaPezzi):
         contaPezzi.setObjectName("contaPezzi")
-        contaPezzi.resize(1534, 885)
+        contaPezzi.resize(1752, 885)
         self.centralwidget = QtWidgets.QWidget(contaPezzi)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -60,6 +60,7 @@ class Ui_contaPezzi(object):
         font.setBold(True)
         font.setWeight(75)
         self.lbPrevisto.setFont(font)
+        self.lbPrevisto.setStyleSheet("")
         self.lbPrevisto.setTextFormat(QtCore.Qt.AutoText)
         self.lbPrevisto.setAlignment(QtCore.Qt.AlignCenter)
         self.lbPrevisto.setObjectName("lbPrevisto")
@@ -280,7 +281,7 @@ class Ui_contaPezzi(object):
         self.verticalLayout.addWidget(self.frame_3)
         contaPezzi.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(contaPezzi)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1534, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1752, 25))
         self.menubar.setObjectName("menubar")
         self.menuFIle = QtWidgets.QMenu(self.menubar)
         self.menuFIle.setObjectName("menuFIle")

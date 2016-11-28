@@ -7,7 +7,7 @@ import time
 from PyQt5 import QtGui, QtCore
 from const import CUSTOMER_NAME, RED_GRADIENT, GREEN_GRADIENT
 from datetime import datetime
-from const import DEBUG, IN_PIN
+from const import DEBUG, IN_PIN, MSG_EXIT, MSG, MSG_WARN_NO_HOUR
 
 if not DEBUG:
     import RPi.GPIO as GPIO
@@ -25,8 +25,8 @@ class PieceCounterGui(QMainWindow):
         self.ui = Ui_contaPezzi()
         self.ui.setupUi(self)
 
-        self.ui.btnChiudi.clicked.connect(self.btnEsciClick)
-        self.ui.actionEsci.triggered.connect(self.btnEsciClick)
+        self.ui.btnChiudi.clicked.connect(self.btn_esci_click)
+        self.ui.actionEsci.triggered.connect(self.btn_esci_click)
         self.ui.lbCliente.setText(CUSTOMER_NAME)
 
         self.ui.btnTest.clicked.connect(self.count_piece)
@@ -45,10 +45,16 @@ class PieceCounterGui(QMainWindow):
         self.internal_init()
 
         if not DEBUG:
+            GPIO.cleanup()
             GPIO.setmode(GPIO.BCM)
             GPIO.setwarnings(False)
             GPIO.setup(IN_PIN, GPIO.IN, GPIO.PUD_UP)
-            GPIO.add_event_detect(IN_PIN, GPIO.RISING, callback=self.count_piece, bouncetime=10)
+            self.read_timer = QtCore.QTimer(self)
+            self.read_timer.timeout.connect(self.count_piece)
+            self.read_timer.start(1)
+            # Can't use... see below.
+            # GPIO.add_event_detect(IN_PIN, GPIO.RISING, callback=self.count_piece, bouncetime=10)
+
 
     def internal_init(self):
         self.logic.prev_preview_pcs = 0
@@ -118,10 +124,10 @@ class PieceCounterGui(QMainWindow):
         self.logic.set_daily_qty(int(self.ui.leNumPezzi.text()))
         self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
 
-    def count_piece(self, channel):
-        if DEBUG or (GPIO.input(IN_PIN)):
+    def count_piece(self):
+        if DEBUG or (not GPIO.input(IN_PIN)):
             if not self.logic.add_piece_in_hour():
-                self.ui.lbError.setText("ATTENZIONE: Orari non trovati. Controllare la tabella")
+                self.ui.lbError.setText(MSG_WARN_NO_HOUR)
             else:
                 self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
                 pcs_ts_hour = self.logic.get_pieces_this_hour()
@@ -131,17 +137,22 @@ class PieceCounterGui(QMainWindow):
                         dict_orario["qty_hour"] = int(dict_orario["qty_hour"]) + 1
                         dict_to_pass = dict_orario
 
-                # Gian: Questa riga provoca crash ogni tanto. Verificare se posso metterla da qualche altra parte.
+                # Can't use add_event_detect (like below) because of a total crash without error message or other
+                # excuting some instruction inside control_color_pcs_done...
+                # GPIO.add_event_detect(IN_PIN, GPIO.RISING, callback=self.count_piece, bouncetime=10)
                 self.control_color_pcs_done(dict_to_pass)
 
                 self.ui.lbError.setText("")
+                if not DEBUG:
+                    while not GPIO.input(IN_PIN):
+                        time.sleep(0.05)
 
-    def btnEsciClick(self):
+    def btn_esci_click(self):
         self.close()
 
     def closeEvent(self, event):
-        s_msg = "Vuoi veramente uscire dal programma ?"
-        reply = QMessageBox.question(self, "Messaggio:", s_msg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        s_msg = MSG_EXIT
+        reply = QMessageBox.question(self, MSG, s_msg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             event.accept()
         else:

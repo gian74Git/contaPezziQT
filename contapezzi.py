@@ -63,14 +63,21 @@ class PieceCounterGui(QMainWindow):
         self.ui.leNumPezzi.setText(str(self.daily_qty))
         self.logic.set_daily_qty()
         self.ui.lbData.setText(time.strftime("%d/%m/%Y"))
-        self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()["tot_pcs"]))
+        tot_pcs = self.logic.get_pieces_until_now()["tot_pcs"]
+        if tot_pcs is not None:
+            self.ui.lbPzFatti.setText(str(tot_pcs))
+        else:
+            self.ui.lbPzFatti.setText("0")
         self.draw_hours_and_qty()
         self.update_preview_now(True)
 
     def update_preview_now(self, do_anyway=False):
         tot_pcs_till_now = self.logic.get_preview_pcs_till_now(do_anyway)
         self.ui.lbPzPrevisti.setText(str(tot_pcs_till_now))
-        if self.logic.get_pieces_until_now()["tot_pcs"] < tot_pcs_till_now:
+        tot_pcs = self.logic.get_pieces_until_now()["tot_pcs"]
+        if tot_pcs is None:
+            tot_pcs = 0
+        if  tot_pcs < tot_pcs_till_now:
             self.ui.lbPzPrevisti.setStyleSheet(self.red_gradient)
         else:
             self.ui.lbPzPrevisti.setStyleSheet(self.green_gradient)

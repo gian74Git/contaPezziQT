@@ -1,4 +1,6 @@
 # if true no GPIO and trigger
+# DATABASE_TYPE = "MYSQL"
+DATABASE_TYPE = "SQLITE"
 DEBUG = True
 IN_PIN = 4
 

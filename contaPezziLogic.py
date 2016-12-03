@@ -18,7 +18,7 @@ class logicCounter():
         if DATABASE_TYPE == "MYSQL":
             self.db_conn = pymysql.connect(DB_HOSTNAME, DB_USER, DB_PASSWORD, DB_NAME)
         else:
-            self.db_conn = sqlite3.connect("/home/giancarlo/Scrivania/sql_lite_test_db.sqlite")
+            self.db_conn = sqlite3.connect("letturePezziDB.sqlite")
             self.db_conn.row_factory = self.dict_factory
 
         self.set_daily_qty()

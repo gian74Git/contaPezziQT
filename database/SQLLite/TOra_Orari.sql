@@ -1,0 +1,23 @@
+CREATE TABLE "TOra_Orari" (
+  "iOraId" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "tOraIni" time NOT NULL,
+  "tOraFine" time NOT NULL,
+  "fOraTotPezzi" float DEFAULT NULL
+) 
+
+INSERT INTO TOra_Orari  VALUES("1", "07:00:00", "08:00:00", "54");
+INSERT INTO TOra_Orari  VALUES("2", "08:00:00", "09:00:00", "5");
+INSERT INTO TOra_Orari  VALUES("3", "09:00:00", "10:00:00", "52");
+INSERT INTO TOra_Orari  VALUES("4", "10:00:00", "11:00:00", "49");
+INSERT INTO TOra_Orari  VALUES("5", "11:00:00", "12:00:00", "48");
+INSERT INTO TOra_Orari  VALUES("6", "12:00:00", "13:00:00", "55");
+INSERT INTO TOra_Orari  VALUES("7", "13:00:00", "14:00:00", "5");
+INSERT INTO TOra_Orari  VALUES("8", "14:00:00", "15:00:00", "52");
+INSERT INTO TOra_Orari  VALUES("9", "15:00:00", "16:00:00", "51");
+INSERT INTO TOra_Orari  VALUES("10", "16:00:00", "17:00:00", "5");
+INSERT INTO TOra_Orari  VALUES("11", "17:00:00", "18:00:00", "47");
+INSERT INTO TOra_Orari  VALUES("12", "18:00:00", "19:00:00", "48");
+INSERT INTO TOra_Orari  VALUES("13", "19:00:00", "20:00:00", "50");
+INSERT INTO TOra_Orari  VALUES("14", "20:00:00", "21:00:00", "60");
+INSERT INTO TOra_Orari  VALUES("15", "21:00:00", "22:00:00", "10");
+

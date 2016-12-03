@@ -3,7 +3,7 @@ CREATE TABLE "TOra_Orari" (
   "tOraIni" time NOT NULL,
   "tOraFine" time NOT NULL,
   "fOraTotPezzi" float DEFAULT NULL
-) 
+);
 
 INSERT INTO TOra_Orari  VALUES("1", "07:00:00", "08:00:00", "54");
 INSERT INTO TOra_Orari  VALUES("2", "08:00:00", "09:00:00", "5");

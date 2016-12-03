@@ -195,7 +195,7 @@ class logicCounter():
             if row is not None:
                 s_qry_upd = "UPDATE TTim_TotaleImpostati set iTimQta = %d where iTimId = %d" %(qta, row["iTimId"])
             else:
-                s_qry_upd = "INSERT INTO TTim_TotaleImpostati (dTimData, iTimQta) VALUES (%s, %d)" %(datetime.datetime.now().strftime("%Y-%m-%d"), qta)
+                s_qry_upd = "INSERT INTO TTim_TotaleImpostati (dTimData, iTimQta) VALUES ('%s', %d)" %(datetime.datetime.now().strftime("%Y-%m-%d"), qta)
 
             cursor.execute(s_qry_upd)
             self.db_conn.commit()

@@ -2,7 +2,7 @@ import pymysql
 import datetime
 from datetime import timedelta
 from PyQt5 import QtWidgets
-from const import CONST_DB, CONST_NUM_PC_TOT_DAY
+from const import DB_NAME, DB_HOSTNAME, DB_USER, DB_PASSWORD, CONST_NUM_PC_TOT_DAY
 
 class logicCounter():
 
@@ -12,7 +12,7 @@ class logicCounter():
         #self.num_pieces_until_now = 0
         self.daily_qty = 0
         self.pieces_x_hour = 0
-        self.db_conn = pymysql.connect("localhost", "root", "sardegna", CONST_DB)
+        self.db_conn = pymysql.connect(DB_HOSTNAME, DB_USER, DB_PASSWORD, DB_NAME)
         # self.db_conn = pymysql.connect("192.168.1.10", "root", "sardegna", CONST_DB)
         self.set_daily_qty()
         self.minutePassed = datetime.datetime.now().strftime("%M")
@@ -46,7 +46,7 @@ class logicCounter():
 
             if row is not None:
                 id_let = int(row[0])
-                s_qry = "UPDATE TLet_Letture SET iLetNumProg = %d WHERE iLetId = %d" %(self.get_pieces_this_hour()[0] + 1, id_let)
+                s_qry = "UPDATE TLet_Letture SET iLetNumProg = %d WHERE iLetId = %d" %(self.get_pieces_this_hour() + 1, id_let)
             else:
                 s_qry = "INSERT INTO TLet_Letture set dLetDataLettura = '%s', sLetNote = '', tLetOraini = '%s', tLetOraFine = '%s', iLetNumProg = %d" \
                         % (curr_date, (datetime.datetime.min + row_orari[1]).time().strftime("%H:%M:%S"),
@@ -59,19 +59,23 @@ class logicCounter():
         return hour_found
 
     def get_pieces_until_now(self):
-        cursor = self.db_conn.cursor()
-        s_qry = "select SUM(iLetNumProg), iLetId from TLet_Letture where dLetDataLettura = '%s'" %datetime.datetime.now().strftime("%Y-%m-%d")
+        cursor = self.db_conn.cursor(pymysql.cursors.DictCursor)
+        s_qry = "select SUM(iLetNumProg) as tot_pcs, (select iLetNumProg from TLet_Letture where dLetDataLettura = '%s' " \
+                "and tLetOraIni <= '%s' and tLetOraFine >= '%s') as pcs_this_hour, " \
+                "(select iOraId from TOra_Orari where tOraIni <= '%s' AND tOraFine >= '%s') as iOraId " \
+                "from TLet_Letture where dLetDataLettura = '%s'" % (datetime.datetime.now().strftime("%Y-%m-%d"),
+                                            datetime.datetime.now().strftime("%H:%M:%S"),
+                                            datetime.datetime.now().strftime("%H:%M:%S"),
+                                            datetime.datetime.now().strftime("%H:%M:%S"),
+                                            datetime.datetime.now().strftime("%H:%M:%S"),
+                                            datetime.datetime.now().strftime("%Y-%m-%d"))
+
         cursor.execute(s_qry)
         row = cursor.fetchone()
-        if (row is not None) and (row[0] is not None):
-            num_pieces_until_now = int(row[0])
-        else:
-            num_pieces_until_now = 0
-
-        return num_pieces_until_now
+        return row
 
     def get_pieces_this_hour(self):
-        result = []
+        # result = []
         cursor = self.db_conn.cursor()
         s_qry = "select iLetNumProg from TLet_Letture where dLetDataLettura = '%s' and tLetOraIni <= '%s' and tLetOraFine >= '%s' "\
                 % (datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"),
@@ -79,24 +83,15 @@ class logicCounter():
         cursor.execute(s_qry)
         row = cursor.fetchone()
         if row[0] is not None:
-            result.append(row[0])
+            result = int(row[0])
         else:
-            result.append(0)
-        s_qry = "select iOraId from TOra_Orari where tOraIni <= '%s' AND tOraFine >= '%s'" \
-                %(datetime.datetime.now().strftime("%H:%M:%S"), datetime.datetime.now().strftime("%H:%M:%S"))
-        cursor.execute(s_qry)
-        row = cursor.fetchone()
-        if row[0] is not None:
-            result.append(row[0])
-        else:
-            result.append(0)
+            result = 0
 
         return result
 
     def get_preview_pieces_this_hour(self, tm_start, tm_end):
         s_qry = "SELECT fOraTotPezzi FROM TOra_Orari WHERE tOraIni <= '%s' AND tOraFine >= '%s'" \
             %(tm_start, tm_end)
-        #% (datetime.datetime.now().strftime("%H:%M:%S"), datetime.datetime.now().strftime("%H:%M:%S"))
         cursor = self.db_conn.cursor()
         cursor.execute(s_qry)
         row = cursor.fetchone()

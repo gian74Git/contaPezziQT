@@ -1,7 +1,7 @@
 # if true no GPIO and trigger
 DEBUG = True
 IN_PIN = 4
-CONST_DB = "letturePezziDB"
+
 CONST_NUM_PC_TOT_DAY = 403
 CUSTOMER_NAME = "VIST TECH"
 RED_GRADIENT = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 " \
@@ -11,3 +11,9 @@ GREEN_GRADIENT = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, 
 MSG_EXIT = "Vuoi veramente uscire dal programma ?"
 MSG = "Messaggio:"
 MSG_WARN_NO_HOUR = "ATTENZIONE: Orari non trovati. Controllare la tabella"
+MAIN_TIMER_WAIT = 20
+
+DB_NAME = "letturePezziDB"
+DB_HOSTNAME = "localhost"
+DB_USER = "root"
+DB_PASSWORD = "sardegna"

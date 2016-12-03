@@ -7,7 +7,7 @@ import time
 from PyQt5 import QtGui, QtCore
 from const import CUSTOMER_NAME, RED_GRADIENT, GREEN_GRADIENT
 from datetime import datetime
-from const import DEBUG, IN_PIN, MSG_EXIT, MSG, MSG_WARN_NO_HOUR
+from const import DEBUG, IN_PIN, MSG_EXIT, MSG, MSG_WARN_NO_HOUR, MAIN_TIMER_WAIT
 
 if not DEBUG:
     import RPi.GPIO as GPIO
@@ -51,7 +51,7 @@ class PieceCounterGui(QMainWindow):
             GPIO.setup(IN_PIN, GPIO.IN, GPIO.PUD_UP)
             self.read_timer = QtCore.QTimer(self)
             self.read_timer.timeout.connect(self.count_piece)
-            self.read_timer.start(1)
+            self.read_timer.start(MAIN_TIMER_WAIT)
             # Can't use... see below.
             # GPIO.add_event_detect(IN_PIN, GPIO.RISING, callback=self.count_piece, bouncetime=10)
 
@@ -63,14 +63,14 @@ class PieceCounterGui(QMainWindow):
         self.ui.leNumPezzi.setText(str(self.daily_qty))
         self.logic.set_daily_qty()
         self.ui.lbData.setText(time.strftime("%d/%m/%Y"))
-        self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
+        self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()["tot_pcs"]))
         self.draw_hours_and_qty()
         self.update_preview_now(True)
 
     def update_preview_now(self, do_anyway=False):
         tot_pcs_till_now = self.logic.get_preview_pcs_till_now(do_anyway)
         self.ui.lbPzPrevisti.setText(str(tot_pcs_till_now))
-        if self.logic.get_pieces_until_now() < tot_pcs_till_now:
+        if self.logic.get_pieces_until_now()["tot_pcs"] < tot_pcs_till_now:
             self.ui.lbPzPrevisti.setStyleSheet(self.red_gradient)
         else:
             self.ui.lbPzPrevisti.setStyleSheet(self.green_gradient)
@@ -125,18 +125,20 @@ class PieceCounterGui(QMainWindow):
         self.ui.lbPzGiorn.setText(str(self.logic.get_daily_qty()))
 
     def count_piece(self):
+        QtCore.QCoreApplication.processEvents()
         if DEBUG or (not GPIO.input(IN_PIN)):
             if not self.logic.add_piece_in_hour():
                 self.ui.lbError.setText(MSG_WARN_NO_HOUR)
             else:
-                self.ui.lbPzFatti.setText(str(self.logic.get_pieces_until_now()))
-                pcs_ts_hour = self.logic.get_pieces_this_hour()
+                pcs_ts_hour = self.logic.get_pieces_until_now()
+                self.ui.lbPzFatti.setText(str(pcs_ts_hour["tot_pcs"]))
+                # pcs_ts_hour = self.logic.get_pieces_this_hour()
                 for dict_orario in self.lista_orari:
-                    if dict_orario["ID"] == pcs_ts_hour[1]:
-                        dict_orario["label_pcs_done"].setText(str(int(pcs_ts_hour[0])))
+                    if dict_orario["ID"] == pcs_ts_hour["iOraId"]:
+                        dict_orario["label_pcs_done"].setText(str(int(pcs_ts_hour["pcs_this_hour"])))
+                        i = int(dict_orario["qty_hour"]) + 1
                         dict_orario["qty_hour"] = int(dict_orario["qty_hour"]) + 1
                         dict_to_pass = dict_orario
-
                 # Can't use add_event_detect (like below) because of a total crash without error message or other
                 # excuting some instruction inside control_color_pcs_done...
                 # GPIO.add_event_detect(IN_PIN, GPIO.RISING, callback=self.count_piece, bouncetime=10)

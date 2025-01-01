@@ -1,11 +1,11 @@
 # if true no GPIO and trigger
-# DATABASE_TYPE = "MYSQL"
-DATABASE_TYPE = "SQLITE"
+DATABASE_TYPE = "MYSQL"
+# DATABASE_TYPE = "SQLITE"
 DEBUG = True
 IN_PIN = 4
 
 CONST_NUM_PC_TOT_DAY = 403
-CUSTOMER_NAME = "VIST TECH"
+CUSTOMER_NAME = "POSTAZIONE 2"
 RED_GRADIENT = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 " \
                             "rgba(174, 0, 5, 255), stop:1 rgba(255, 2, 0, 255));"
 GREEN_GRADIENT = "background-color: qlineargradient(spread:pad, x1:0.505, y1:1, x2:0.505, y2:0, stop:0 " \
@@ -18,4 +18,4 @@ MAIN_TIMER_WAIT = 20
 DB_NAME = "letturePezziDB"
 DB_HOSTNAME = "localhost"
 DB_USER = "root"
-DB_PASSWORD = "sardegna"
+DB_PASSWORD = "root"

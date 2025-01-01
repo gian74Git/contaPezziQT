@@ -16,7 +16,7 @@ class logicCounter():
         self.daily_qty = 0
         self.pieces_x_hour = 0
         if DATABASE_TYPE == "MYSQL":
-            self.db_conn = pymysql.connect(DB_HOSTNAME, DB_USER, DB_PASSWORD, DB_NAME)
+            self.db_conn = pymysql.connect(host=DB_HOSTNAME, user=DB_USER, password=DB_PASSWORD, database=DB_NAME, cursorclass=pymysql.cursors.DictCursor)
         else:
             self.db_conn = sqlite3.connect("letturePezziDB.sqlite")
             self.db_conn.row_factory = self.dict_factory
@@ -85,7 +85,7 @@ class logicCounter():
 
         s_qry = "select SUM(iLetNumProg) as tot_pcs, (select iLetNumProg from TLet_Letture where dLetDataLettura = '%s' " \
                 "and tLetOraIni <= '%s' and tLetOraFine >= '%s') as pcs_this_hour, " \
-                "(select iOraId from TOra_Orari where tOraIni <= '%s' AND tOraFine >= '%s') as iOraId " \
+                "(select iOraId from TOra_Orari where tOraIni <= '%s' AND tOraFine > '%s') as iOraId " \
                 "from TLet_Letture where dLetDataLettura = '%s'" % (datetime.datetime.now().strftime("%Y-%m-%d"),
                                             datetime.datetime.now().strftime("%H:%M:%S"),
                                             datetime.datetime.now().strftime("%H:%M:%S"),
